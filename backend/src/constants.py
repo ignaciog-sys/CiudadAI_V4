@@ -8,6 +8,7 @@ API_TAGS = {
     "health": "health",
     "auth": "auth",
     "items": "items",
+    "tickets": "tickets",
 }
 
 DEFAULT_ITEMS = [
