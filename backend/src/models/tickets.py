@@ -4,23 +4,49 @@ Propósito: definir la base lógica de tickets, el payload del ciudadano, la
 versión anonimizada que se persiste y los metadatos de revisión.
 """
 
+import re
+import unicodedata
 from datetime import datetime, timezone
 from enum import IntEnum, StrEnum
 
 from pydantic import BaseModel, Field
 
 
+def _normalize_category(value: str) -> str:
+    normalized = value.strip().lower()
+    normalized = unicodedata.normalize("NFKD", normalized)
+    normalized = "".join(
+        character for character in normalized if not unicodedata.combining(character)
+    )
+    normalized = normalized.replace("-", "_").replace(" ", "_")
+    normalized = re.sub(r"_+", "_", normalized)
+    return normalized
+
+
 class TicketCategory(StrEnum):
     """Taxonomía base para clasificar incidencias urbanas."""
 
-    roads = "roads"
-    lighting = "lighting"
-    waste = "waste"
-    water = "water"
-    parks = "parks"
-    mobility = "mobility"
-    safety = "safety"
-    other = "other"
+    movilidad = "movilidad"
+    limpieza = "limpieza"
+    alumbrado_publico = "alumbrado_publico"
+    parques_y_jardines = "parques_y_jardines"
+    mobiliario_urbano = "mobiliario_urbano"
+
+    @classmethod
+    def _missing_(cls, value: object):
+        if not isinstance(value, str):
+            return None
+
+        normalized = _normalize_category(value)
+
+        # Acepta el nombre del miembro (p.ej. "alumbrado_publico"),
+        # el valor canónico (p.ej. "parques_y_jardines") y variantes
+        # con espacios/acentos (p.ej. "Parques y jardines").
+        for member in cls:
+            if normalized == member.name or normalized == member.value:
+                return member
+
+        return None
 
 
 class TicketChannel(StrEnum):

@@ -16,6 +16,10 @@ def test_ticket_spec_endpoint_returns_contract(client):
         "email",
     ]
     assert payload["urgency_scale"] == [1, 2, 3, 4, 5]
-    assert "roads" in payload["categories"]
+    assert "movilidad" in payload["categories"]
+    assert "limpieza" in payload["categories"]
+    assert "alumbrado_publico" in payload["categories"]
+    assert "parques_y_jardines" in payload["categories"]
+    assert "mobiliario_urbano" in payload["categories"]
     assert "web" in payload["channels"]
     assert "pending_review" in payload["statuses"]

@@ -25,7 +25,7 @@ def test_ticket_create_input_builds_with_defaults():
         nif="12345678A",
         telefono="600123123",
         email="ana@example.com",
-        categoria=TicketCategory.roads,
+        categoria=TicketCategory.movilidad,
         description="Hay un bache grande en la calle principal.",
         canal=TicketChannel.web,
         direccion_persona="Calle Mayor 1",
@@ -33,8 +33,27 @@ def test_ticket_create_input_builds_with_defaults():
     )
 
     assert ticket.nombre == "Ana"
-    assert ticket.categoria == TicketCategory.roads
+    assert ticket.categoria == TicketCategory.movilidad
     assert ticket.fecha.tzinfo is not None
+
+
+def test_ticket_create_input_accepts_spanish_category_labels():
+    """La categoría debe aceptar variantes en español con acentos/espacios."""
+
+    ticket = TicketCreateInput(
+        nombre="Ana",
+        apellidos="García López",
+        nif="12345678A",
+        telefono="600123123",
+        email="ana@example.com",
+        categoria="alumbrado público",
+        description="Farola apagada desde hace días.",
+        canal=TicketChannel.mobile,
+        direccion_persona="Calle Mayor 1",
+        ubicacion_incidencia="Esquina con Plaza Central",
+    )
+
+    assert ticket.categoria == TicketCategory.alumbrado_publico
 
 
 def test_ticket_anonymized_record_contains_control_fields():
@@ -47,7 +66,7 @@ def test_ticket_anonymized_record_contains_control_fields():
         nif="***",
         telefono="***",
         email="***",
-        categoria=TicketCategory.lighting,
+        categoria=TicketCategory.alumbrado_publico,
         description="Farola apagada desde hace días.",
         urgencia=TicketUrgency.high,
         fecha=datetime.now().astimezone(),
@@ -55,9 +74,9 @@ def test_ticket_anonymized_record_contains_control_fields():
         direccion_persona="Avenida del Parque 2",
         ubicacion_incidencia="Frente al portal 10",
         model_urgencia=TicketUrgency.medium,
-        model_categoria=TicketCategory.lighting,
+        model_categoria=TicketCategory.alumbrado_publico,
         final_urgencia=TicketUrgency.high,
-        final_categoria=TicketCategory.lighting,
+        final_categoria=TicketCategory.alumbrado_publico,
         status=TicketStatus.pending_review,
         reviewed_by=None,
         reviewed_at=None,
