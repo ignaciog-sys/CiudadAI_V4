@@ -1,0 +1,32 @@
+# Archivo estándar del ecosistema Python para definir metadatos,
+# dependencias y configuración de herramientas del proyecto.
+
+[project]
+name = "fastapi-base-template"
+version = "0.1.0"
+description = "Plantilla mínima profesional para aprender FastAPI con una estructura escalable"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi==0.115.12",
+    "uvicorn[standard]==0.34.2",
+    "pydantic-settings==2.9.1",
+]
+
+# Configuración de pruebas con pytest.
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+# Configuración de Ruff para linting y formato.
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

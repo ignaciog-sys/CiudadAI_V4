@@ -1,0 +1,25 @@
+# Compose básico para levantar la API durante desarrollo.
+# Ejemplo: monta el código local y ejecuta Uvicorn con `--reload`.
+
+services:
+  api:
+    build: ./backend
+    command: uvicorn src.app:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+
+  frontend:
+    build: ./frontend
+    command: uvicorn app:app --host 0.0.0.0 --port 8500 --reload
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - api
+    ports:
+      - "8500:8500"
+    volumes:
+      - ./frontend:/app

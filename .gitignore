@@ -1,0 +1,12 @@
+# Archivo para ignorar artefactos locales y de Python.
+# Ejemplo: aquí se excluyen entornos virtuales, cachés y archivos de configuración local.
+
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+.env
+dist/
+build/
+*.pyc

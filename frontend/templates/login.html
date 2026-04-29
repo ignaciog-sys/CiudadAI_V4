@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card">
+  <h1>Acceso</h1>
+  <p class="muted">Inicia sesión con las credenciales del backend.</p>
+
+  {% if error %}
+  <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" action="/login" class="stack">
+    <label>
+      Usuario
+      <input type="text" name="username" required />
+    </label>
+    <label>
+      Contraseña
+      <input type="password" name="password" required />
+    </label>
+    <button type="submit">Entrar</button>
+  </form>
+</section>
+{% endblock %}
