@@ -16,34 +16,242 @@
   <div class="admin-content" style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid #ddd;">
     <h2>{{ admin_data.content.title }}</h2>
     <p>{{ admin_data.content.description }}</p>
-    
+
     <div style="margin-top: 2rem; padding: 1rem; background: #fff3cd; border-radius: 4px; border-left: 4px solid #ff9800;">
       <p style="margin: 0;">
-        <strong>⚠️ CONTENIDO CONFIDENCIAL:</strong> Este panel es de acceso restringido solo para administradores. 
+        <strong>⚠️ CONTENIDO CONFIDENCIAL:</strong> Este panel es de acceso restringido solo para administradores.
         Cualquier acción realizada aquí será registrada.
       </p>
+    </div>
+
+    <div id="admin-status" style="margin-top: 1.5rem; font-weight: 600; color: #212529;"></div>
+
+    <div class="admin-summary" style="display: grid; gap: 1rem; margin-top: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+      <div class="stat-card" style="background: #eef2ff; padding: 1rem; border-radius: 8px; border: 1px solid #d6d5ff;">
+        <p style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: #5d5dff; letter-spacing: 0.04em;">Total tickets</p>
+        <p id="stat-total" style="margin: 0; font-size: 2rem; font-weight: 700;">0</p>
+      </div>
+      <div class="stat-card" style="background: #fff0f6; padding: 1rem; border-radius: 8px; border: 1px solid #ffd6e7;">
+        <p style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: #b32d65; letter-spacing: 0.04em;">Abiertos</p>
+        <p id="stat-open" style="margin: 0; font-size: 2rem; font-weight: 700;">0</p>
+      </div>
+      <div class="stat-card" style="background: #e7f5ff; padding: 1rem; border-radius: 8px; border: 1px solid #b6e0fe;">
+        <p style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: #1864ab; letter-spacing: 0.04em;">Cerrados</p>
+        <p id="stat-closed" style="margin: 0; font-size: 2rem; font-weight: 700;">0</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 2rem; overflow-x: auto;">
+      <table id="tickets-table" style="width: 100%; border-collapse: collapse; min-width: 720px;">
+        <thead>
+          <tr style="background: #f3f0ff; text-align: left;">
+            <th style="padding: 1rem; border-bottom: 2px solid #ddd;">ID</th>
+            <th style="padding: 1rem; border-bottom: 2px solid #ddd;">Título</th>
+            <th style="padding: 1rem; border-bottom: 2px solid #ddd;">Urgencia</th>
+            <th style="padding: 1rem; border-bottom: 2px solid #ddd;">Estado</th>
+            <th style="padding: 1rem; border-bottom: 2px solid #ddd;">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tickets-table-body"></tbody>
+      </table>
     </div>
   </div>
 
   <div style="text-align: center; margin-top: 2rem;">
     <form method="post" action="/logout" style="display: inline;">
-      <button type="submit" class="logout-btn" style="background: #dc3545; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
-        Cerrar Sesión
-      </button>
+      <button type="submit" class="logout-btn" style="background: #dc3545; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">Cerrar Sesión</button>
     </form>
   </div>
 </div>
 
 <style>
   .admin-container {
-    max-width: 900px;
+    max-width: 1080px;
     margin: 0 auto;
     padding: 2rem 0;
   }
-  
+
   .logout-btn:hover {
     background: #c82333;
     transition: background 0.3s ease;
   }
+
+  .badge-urgencia {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .badge-alta { background: #d63384; }
+  .badge-media { background: #fd7e14; }
+  .badge-baja { background: #2f9e44; }
+
+  .manage-row { background: #f8f9ff; }
+  .manage-row.hidden { display: none; }
+  .manage-panel textarea,
+  .manage-panel select { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; }
+  .manage-panel button { background: #6f42c1; color: white; border: none; border-radius: 6px; padding: 0.8rem 1.2rem; cursor: pointer; }
+  .manage-panel button:hover { background: #5a31a9; }
+  .manage-status { margin-top: 0.75rem; font-weight: 600; }
 </style>
+
+<script>
+  const urgencyOrder = { alta: 1, media: 2, baja: 3 };
+  const urgencyLabels = {
+    alta: { label: 'ALTA', class: 'badge-alta' },
+    media: { label: 'MEDIA', class: 'badge-media' },
+    baja: { label: 'BAJA', class: 'badge-baja' },
+  };
+
+  const statusEl = document.getElementById('admin-status');
+  const ticketsBody = document.getElementById('tickets-table-body');
+  const totalEl = document.getElementById('stat-total');
+  const openEl = document.getElementById('stat-open');
+  const closedEl = document.getElementById('stat-closed');
+
+  function createUrgencyBadge(urgency) {
+    const info = urgencyLabels[urgency] || { label: urgency || 'N/A', class: 'badge-baja' };
+    return `<span class="badge-urgencia ${info.class}">${info.label}</span>`;
+  }
+
+  function sortTickets(tickets) {
+    return tickets.slice().sort((a, b) => {
+      return (urgencyOrder[a.urgencia] || 4) - (urgencyOrder[b.urgencia] || 4);
+    });
+  }
+
+  function renderStats(tickets) {
+    const total = tickets.length;
+    const open = tickets.filter(t => t.estado === 'nuevo' || t.estado === 'pendiente').length;
+    const closed = tickets.filter(t => t.estado === 'cerrado').length;
+    totalEl.textContent = total;
+    openEl.textContent = open;
+    closedEl.textContent = closed;
+  }
+
+  function renderTable(tickets) {
+    ticketsBody.innerHTML = '';
+    const sorted = sortTickets(tickets);
+
+    if (!sorted.length) {
+      ticketsBody.innerHTML = '<tr><td colspan="5" style="padding: 1.5rem; text-align: center; color: #6c757d;">No se encontraron tickets.</td></tr>';
+      return;
+    }
+
+    sorted.forEach(ticket => {
+      const row = document.createElement('tr');
+      const ticketId = ticket.ticket_id || ticket.id || 'N/A';
+      const title = ticket.titulo || ticket.title || 'Sin título';
+      const urgency = ticket.urgencia || 'baja';
+      const state = ticket.estado || 'nuevo';
+
+      row.innerHTML = `
+        <td style="padding: 1rem; border-bottom: 1px solid #e9ecef;">${ticketId}</td>
+        <td style="padding: 1rem; border-bottom: 1px solid #e9ecef;">${title}</td>
+        <td style="padding: 1rem; border-bottom: 1px solid #e9ecef;">${createUrgencyBadge(urgency)}</td>
+        <td style="padding: 1rem; border-bottom: 1px solid #e9ecef;" data-state-cell>${state}</td>
+        <td style="padding: 1rem; border-bottom: 1px solid #e9ecef;"><button type="button" class="manage-btn" style="background: #6f42c1; color: white; padding: 0.55rem 1rem; border: none; border-radius: 6px; cursor: pointer;">Gestionar</button></td>
+      `;
+
+      const manageRow = document.createElement('tr');
+      manageRow.className = 'manage-row hidden';
+      manageRow.innerHTML = `
+        <td colspan="5" style="padding: 1rem; border-bottom: 1px solid #e9ecef;">
+          <div class="manage-panel" style="display: grid; gap: 1rem;">
+            <div>
+              <label style="display:block; font-weight:700; margin-bottom:0.5rem;">Estado</label>
+              <select class="manage-status-select">
+                <option value="nuevo">nuevo</option>
+                <option value="pendiente">pendiente</option>
+                <option value="cerrado">cerrado</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block; font-weight:700; margin-bottom:0.5rem;">Respuesta municipal</label>
+              <textarea class="manage-response" rows="4" placeholder="Escribe la respuesta aquí..."></textarea>
+            </div>
+            <div style="display:flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
+              <button type="button" class="save-ticket-btn">Guardar cambios</button>
+              <span class="manage-status"></span>
+            </div>
+          </div>
+        </td>
+      `;
+
+      const manageButton = row.querySelector('.manage-btn');
+      manageButton.addEventListener('click', () => {
+        manageRow.classList.toggle('hidden');
+      });
+
+      manageRow.querySelector('.save-ticket-btn').addEventListener('click', async () => {
+        const select = manageRow.querySelector('.manage-status-select');
+        const textarea = manageRow.querySelector('.manage-response');
+        const statusMessage = manageRow.querySelector('.manage-status');
+        const newEstado = select.value;
+        const respuesta = textarea.value.trim();
+
+        if (!respuesta) {
+          statusMessage.textContent = 'Ingresa una respuesta antes de guardar.';
+          statusMessage.style.color = '#842029';
+          return;
+        }
+
+        statusMessage.textContent = 'Guardando...';
+        statusMessage.style.color = '#0f5132';
+
+        try {
+          const response = await fetch(`/admin/tickets/${encodeURIComponent(ticketId)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado: newEstado, respuesta }),
+          });
+          const result = await response.json();
+          if (!response.ok || result.ok === false) {
+            statusMessage.textContent = result.error || 'No se pudo actualizar el ticket.';
+            statusMessage.style.color = '#842029';
+            return;
+          }
+
+          statusMessage.textContent = 'Actualizado correctamente.';
+          statusMessage.style.color = '#0f5132';
+          row.querySelector('[data-state-cell]').textContent = newEstado;
+        } catch (error) {
+          statusMessage.textContent = 'Error al guardar los cambios.';
+          statusMessage.style.color = '#842029';
+        }
+      });
+
+      ticketsBody.appendChild(row);
+      ticketsBody.appendChild(manageRow);
+    });
+  }
+
+  async function loadTickets() {
+    statusEl.textContent = 'Cargando tickets...';
+    try {
+      const response = await fetch('/admin/tickets');
+      const data = await response.json();
+      if (!response.ok || !Array.isArray(data)) {
+        statusEl.textContent = data.error || 'No se pudo cargar la lista de tickets.';
+        statusEl.style.color = '#842029';
+        renderTable([]);
+        renderStats([]);
+        return;
+      }
+
+      statusEl.textContent = '';
+      renderStats(data);
+      renderTable(data);
+    } catch (error) {
+      statusEl.textContent = 'Error al cargar los tickets.';
+      statusEl.style.color = '#842029';
+      renderTable([]);
+      renderStats([]);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadTickets);
+</script>
 {% endblock %}

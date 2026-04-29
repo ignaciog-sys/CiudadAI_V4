@@ -16,46 +16,190 @@
   <div class="citizen-content" style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid #ddd;">
     <h2>{{ citizen_data.content.title }}</h2>
     <p>{{ citizen_data.content.description }}</p>
-    
+
     <div style="margin-top: 2rem; padding: 1.5rem; background: #d4edda; border-radius: 4px; border-left: 4px solid #28a745;">
       <p style="margin: 0;">
-        <strong>✅ ¡Bienvenido!</strong> Como ciudadano, puedes reportar incidencias en tu ciudad. 
+        <strong>✅ ¡Bienvenido!</strong> Como ciudadano, puedes reportar incidencias en tu ciudad.
         Tu participación nos ayuda a mantener una ciudad mejor para todos.
       </p>
     </div>
 
-    <div style="margin-top: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-      <div style="background: #f0f7ff; padding: 1.5rem; border-radius: 4px; border-left: 4px solid #2196F3;">
-        <h3 style="margin-top: 0;">📝 Crear Reporte</h3>
-        <p>Reporta incidencias como baches, alumbrado roto, basura acumulada, etc.</p>
-      </div>
-      
-      <div style="background: #fff3e0; padding: 1.5rem; border-radius: 4px; border-left: 4px solid #FF9800;">
-        <h3 style="margin-top: 0;">📊 Ver Mis Reportes</h3>
-        <p>Consulta el estado de tus reportes anteriores y el progreso de las reparaciones.</p>
-      </div>
+    <div class="citizen-actions" style="display: grid; gap: 2rem; margin-top: 2rem;">
+      <section style="background: #f0fff4; padding: 1.5rem; border-radius: 8px; border: 1px solid #d4f7db;">
+        <h3 style="margin-top: 0;">📝 Crear incidencia</h3>
+        <div style="display: grid; gap: 1rem;">
+          <label>
+            Título
+            <input id="ticket-title" type="text" placeholder="Título breve" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #ccc;" />
+          </label>
+          <label>
+            Descripción
+            <textarea id="ticket-description" rows="4" placeholder="Describe el problema" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #ccc;"></textarea>
+          </label>
+          <label>
+            Ubicación
+            <input id="ticket-location" type="text" placeholder="Ej: Calle Mayor 123" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #ccc;" />
+          </label>
+          <label>
+            Categoría sugerida
+            <select id="ticket-category" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #ccc;">
+              <option value="infraestructura">Infraestructura</option>
+              <option value="limpieza">Limpieza</option>
+              <option value="iluminación">Iluminación</option>
+              <option value="ruido">Ruido</option>
+              <option value="otros">Otros</option>
+            </select>
+          </label>
+          <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <button id="submit-ticket" type="button" style="background: #11998e; color: white; padding: 0.9rem 1.5rem; border: none; border-radius: 6px; cursor: pointer;">Enviar incidencia</button>
+            <span id="create-status" style="font-weight: 600; color: #155724;"></span>
+          </div>
+        </div>
+      </section>
+
+      <section style="background: #ecfff7; padding: 1.5rem; border-radius: 8px; border: 1px solid #b7ebc6;">
+        <h3 style="margin-top: 0;">🔎 Buscar ticket por ID</h3>
+        <div style="display: grid; gap: 1rem;">
+          <label>
+            ID del ticket
+            <input id="search-ticket-id" type="text" placeholder="Ingrese el ID del ticket" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #ccc;" />
+          </label>
+          <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <button id="search-ticket-btn" type="button" style="background: #38b000; color: white; padding: 0.9rem 1.5rem; border: none; border-radius: 6px; cursor: pointer;">Buscar</button>
+            <span id="search-status" style="font-weight: 600; color: #155724;"></span>
+          </div>
+          <div id="ticket-result" style="background: white; padding: 1rem; border-radius: 6px; border: 1px solid #d1e7dd; display: none;"></div>
+        </div>
+      </section>
     </div>
   </div>
 
   <div style="text-align: center; margin-top: 2rem;">
     <form method="post" action="/logout" style="display: inline;">
-      <button type="submit" class="logout-btn" style="background: #dc3545; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
-        Cerrar Sesión
-      </button>
+      <button type="submit" class="logout-btn" style="background: #dc3545; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">Cerrar Sesión</button>
     </form>
   </div>
 </div>
 
 <style>
   .citizen-container {
-    max-width: 900px;
+    max-width: 980px;
     margin: 0 auto;
     padding: 2rem 0;
   }
-  
+
   .logout-btn:hover {
     background: #c82333;
     transition: background 0.3s ease;
   }
+
+  .badge-ticket {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .badge-nuevo { background: #0d6efd; }
+  .badge-pendiente { background: #ffc107; color: #212529; }
+  .badge-cerrado { background: #198754; }
 </style>
+
+<script>
+  const createStatus = document.getElementById('create-status');
+  const searchStatus = document.getElementById('search-status');
+  const ticketResult = document.getElementById('ticket-result');
+
+  function showCreateMessage(message, success = true) {
+    createStatus.textContent = message;
+    createStatus.style.color = success ? '#155724' : '#842029';
+  }
+
+  function showSearchMessage(message, success = true) {
+    searchStatus.textContent = message;
+    searchStatus.style.color = success ? '#155724' : '#842029';
+  }
+
+  function renderTicketResult(ticket) {
+    ticketResult.style.display = 'block';
+    const badgeClass = ticket.estado === 'nuevo' ? 'badge-nuevo' : ticket.estado === 'pendiente' ? 'badge-pendiente' : 'badge-cerrado';
+    ticketResult.innerHTML = `
+      <div style="display: grid; gap: 0.75rem;">
+        <p><strong>ID:</strong> ${ticket.ticket_id || ticket.id || 'N/A'}</p>
+        <p><strong>Título:</strong> ${ticket.titulo || ticket.title || 'N/A'}</p>
+        <p><strong>Estado:</strong> <span class="badge-ticket ${badgeClass}">${ticket.estado || 'N/A'}</span></p>
+        <p><strong>Urgencia:</strong> ${ticket.urgencia || 'N/A'}</p>
+        <p><strong>Respuesta municipal:</strong> ${ticket.respuesta_municipal || 'No disponible'}</p>
+      </div>
+    `;
+  }
+
+  document.getElementById('submit-ticket').addEventListener('click', async () => {
+    const title = document.getElementById('ticket-title').value.trim();
+    const description = document.getElementById('ticket-description').value.trim();
+    const location = document.getElementById('ticket-location').value.trim();
+    const category = document.getElementById('ticket-category').value;
+
+    if (!title || !description || !location) {
+      showCreateMessage('Por favor completa todos los campos.', false);
+      return;
+    }
+
+    showCreateMessage('Cargando...', true);
+    const formData = new FormData();
+    formData.append('titulo', title);
+    formData.append('descripcion', description);
+    formData.append('ubicacion', location);
+    formData.append('categoria_sugerida', category);
+
+    try {
+      const response = await fetch('/citizen/tickets', {
+        method: 'POST',
+        body: formData,
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        showCreateMessage(result.error || 'No se pudo crear el ticket.', false);
+        return;
+      }
+
+      showCreateMessage(`Incidencia creada correctamente: ID ${result.ticket_id}`);
+      document.getElementById('ticket-title').value = '';
+      document.getElementById('ticket-description').value = '';
+      document.getElementById('ticket-location').value = '';
+      document.getElementById('ticket-category').value = 'infraestructura';
+    } catch (error) {
+      showCreateMessage('Error al enviar la incidencia.', false);
+    }
+  });
+
+  document.getElementById('search-ticket-btn').addEventListener('click', async () => {
+    const ticketId = document.getElementById('search-ticket-id').value.trim();
+    if (!ticketId) {
+      showSearchMessage('Ingresa un ID válido.', false);
+      ticketResult.style.display = 'none';
+      return;
+    }
+
+    showSearchMessage('Cargando...', true);
+    ticketResult.style.display = 'none';
+
+    try {
+      const response = await fetch(`/citizen/tickets/${encodeURIComponent(ticketId)}`);
+      const result = await response.json();
+
+      if (!response.ok || result.ok === false) {
+        showSearchMessage('Ticket no encontrado.', false);
+        return;
+      }
+
+      renderTicketResult(result);
+      showSearchMessage('Ticket encontrado.');
+    } catch (error) {
+      showSearchMessage('Error al buscar el ticket.', false);
+    }
+  });
+</script>
 {% endblock %}
