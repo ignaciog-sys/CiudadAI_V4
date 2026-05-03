@@ -9,7 +9,7 @@ import unicodedata
 from datetime import datetime, timezone
 from enum import IntEnum, StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field, validator
 
 
 def _normalize_category(value: str) -> str:
@@ -31,6 +31,7 @@ class TicketCategory(StrEnum):
     alumbrado_publico = "alumbrado_publico"
     parques_y_jardines = "parques_y_jardines"
     mobiliario_urbano = "mobiliario_urbano"
+    otros = "otros"
 
     @classmethod
     def _missing_(cls, value: object):
@@ -47,16 +48,6 @@ class TicketCategory(StrEnum):
                 return member
 
         return None
-
-
-class TicketChannel(StrEnum):
-    """Canal por el que entra una incidencia."""
-
-    web = "web"
-    mobile = "mobile"
-    phone = "phone"
-    email = "email"
-    app = "app"
 
 
 class TicketUrgency(IntEnum):
@@ -84,15 +75,35 @@ class TicketCreateInput(BaseModel):
 
     nombre: str = Field(min_length=1, max_length=120)
     apellidos: str = Field(min_length=1, max_length=180)
-    nif: str = Field(min_length=5, max_length=32)
-    telefono: str = Field(min_length=5, max_length=24)
-    email: str = Field(min_length=5, max_length=254)
+    nif: str = Field(min_length=9, max_length=9)
+    telefono: str = Field(min_length=8, max_length=24)
+    email: EmailStr = Field(min_length=5, max_length=254)
     categoria: TicketCategory
-    description: str = Field(min_length=1, max_length=4000)
-    canal: TicketChannel
+    description: str = Field(min_length=1, max_length=300)
     direccion_persona: str = Field(min_length=1, max_length=255)
     ubicacion_incidencia: str = Field(min_length=1, max_length=255)
     fecha: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    @validator("nombre", "apellidos")
+    def validate_name(cls, value: str) -> str:
+        normalized = value.strip()
+        if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+", normalized):
+            raise ValueError("Solo se permiten letras y espacios en nombre y apellidos.")
+        return normalized
+
+    @validator("nif")
+    def validate_nif_nie(cls, value: str) -> str:
+        normalized = value.strip().upper()
+        if not re.fullmatch(r"(?:\d{8}[A-Z]|[XYZ]\d{7}[A-Z])", normalized):
+            raise ValueError("NIF/NIE debe tener formato válido.")
+        return normalized
+
+    @validator("telefono")
+    def validate_telefono(cls, value: str) -> str:
+        normalized = re.sub(r"[\s\-]+", " ", value.strip())
+        if not re.fullmatch(r"\+\d{1,3} \d{6,15}", normalized):
+            raise ValueError("Teléfono debe incluir prefijo +CC y un número válido.")
+        return normalized
 
 
 class TicketAnonymizedRecord(BaseModel):
@@ -106,7 +117,6 @@ class TicketAnonymizedRecord(BaseModel):
     categoria: TicketCategory
     description: str
     fecha: datetime
-    canal: TicketChannel
     direccion_persona: str
     ubicacion_incidencia: str
     prediccion_urgencia: TicketUrgency | None = None
@@ -148,6 +158,7 @@ class TicketSummary(BaseModel):
     status: TicketStatus
     fecha: datetime
     ubicacion_incidencia: str
+    description: str
 
 
 class TicketDashboardStats(BaseModel):
@@ -172,5 +183,4 @@ class TicketContractSpec(BaseModel):
     anonymized_fields: list[str]
     urgency_scale: list[int]
     categories: list[TicketCategory]
-    channels: list[TicketChannel]
     statuses: list[TicketStatus]

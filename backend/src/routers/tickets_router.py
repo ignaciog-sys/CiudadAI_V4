@@ -17,7 +17,6 @@ from src.models.tickets import (
     TicketAdminDecision,
     TicketAnonymizedRecord,
     TicketCategory,
-    TicketChannel,
     TicketContractSpec,
     TicketCreateInput,
     TicketStatus,
@@ -44,12 +43,12 @@ async def ticket_spec() -> TicketContractSpec:
     return TicketContractSpec(
         input_fields=[
             "nombre", "apellidos", "nif", "telefono", "email",
-            "categoria", "description", "canal",
+            "categoria", "description",
             "direccion_persona", "ubicacion_incidencia", "fecha",
         ],
         persisted_fields=[
             "id", "nombre", "apellidos", "nif", "telefono", "email",
-            "categoria", "description", "urgencia", "fecha", "canal",
+            "categoria", "description", "urgencia", "fecha",
             "direccion_persona", "ubicacion_incidencia",
             "prediccion_urgencia", "prediccion_categoria",
             "status", "reviewed_by", "reviewed_at",
@@ -57,7 +56,6 @@ async def ticket_spec() -> TicketContractSpec:
         anonymized_fields=["nombre", "apellidos", "nif", "telefono", "email"],
         urgency_scale=[1, 2, 3, 4, 5],
         categories=list(TicketCategory),
-        channels=list(TicketChannel),
         statuses=list(TicketStatus),
     )
 

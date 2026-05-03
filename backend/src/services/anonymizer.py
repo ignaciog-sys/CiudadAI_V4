@@ -15,7 +15,7 @@ Contrato esperado de la función `anonymize_ticket`:
         · nif      → "***"
         · telefono → "***"
         · email    → "***@***.***"
-    - Los campos no sensibles (categoria, description, canal, etc.) deben
+    - Los campos no sensibles (categoria, description, etc.) deben
       pasarse sin modificar al dict de salida.
 
 Mientras no se implemente la lógica real, la función actúa como identidad
@@ -62,7 +62,6 @@ def anonymize_ticket(ticket_input: TicketCreateInput) -> dict:
         # Campos no sensibles — pasar sin modificar
         "categoria": ticket_input.categoria,
         "description": ticket_input.description,
-        "canal": ticket_input.canal,
         "direccion_persona": ticket_input.direccion_persona,
         "ubicacion_incidencia": ticket_input.ubicacion_incidencia,
         "fecha": ticket_input.fecha,

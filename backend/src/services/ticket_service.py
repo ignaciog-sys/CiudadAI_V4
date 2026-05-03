@@ -48,7 +48,6 @@ def _orm_to_record(row: TicketORM) -> TicketAnonymizedRecord:
         categoria=TicketCategory(row.categoria),
         description=row.description,
         fecha=row.fecha,
-        canal=row.canal,
         direccion_persona=row.direccion_persona,
         ubicacion_incidencia=row.ubicacion_incidencia,
         # Mapeo a los nuevos atributos
@@ -69,6 +68,7 @@ def _orm_to_summary(row: TicketORM) -> TicketSummary:
         status=TicketStatus(row.status),
         fecha=row.fecha,
         ubicacion_incidencia=row.ubicacion_incidencia,
+        description=row.description,
         prediccion_urgencia=TicketUrgency(row.prediccion_urgencia) if row.prediccion_urgencia else None,
         prediccion_categoria=TicketCategory(row.prediccion_categoria) if row.prediccion_categoria else None,
     )
@@ -127,7 +127,6 @@ async def create_ticket(
         email=anon_data["email"],
         categoria=str(anon_data["categoria"]),
         description=anon_data["description"],
-        canal=str(anon_data["canal"]),
         direccion_persona=anon_data["direccion_persona"],
         ubicacion_incidencia=anon_data["ubicacion_incidencia"],
         fecha=anon_data["fecha"],

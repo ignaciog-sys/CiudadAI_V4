@@ -20,4 +20,4 @@ class Item(BaseModel):
 
 class ItemsResponse(BaseModel):
     items: list[Item]
-    requested_by: str
+    requested_by: str | None = None

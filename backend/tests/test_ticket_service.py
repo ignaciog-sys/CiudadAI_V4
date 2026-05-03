@@ -11,7 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.tickets import (
     TicketAdminDecision,
     TicketCategory,
-    TicketChannel,
     TicketCreateInput,
     TicketStatus,
 )
@@ -28,7 +27,6 @@ def sample_input() -> TicketCreateInput:
         email="pedro@example.com",
         categoria=TicketCategory.limpieza,
         description="Contenedores de basura llenos hace tres días en la plaza.",
-        canal=TicketChannel.mobile,
         direccion_persona="Avenida de la Paz 10",
         ubicacion_incidencia="Plaza del Mercado",
     )
@@ -44,7 +42,6 @@ async def test_create_ticket_persists_in_db(db_session: AsyncSession, sample_inp
     assert record.id > 0
     assert record.categoria == TicketCategory.limpieza
     assert record.description == sample_input.description
-    assert record.canal == TicketChannel.mobile
 
 
 @pytest.mark.asyncio

@@ -6,7 +6,7 @@ Se ha eliminado la autenticación para ciudadanos según los nuevos requisitos.
 """
 
 import pytest
-from src.models.tickets import TicketCategory, TicketChannel
+from src.models.tickets import TicketCategory
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -20,7 +20,6 @@ TICKET_PAYLOAD = {
     "email": "maria@example.com",
     "categoria": "limpieza",
     "description": "Hay grafitis en la fachada del ayuntamiento.",
-    "canal": "web",
     "direccion_persona": "Calle del Sol 5",
     "ubicacion_incidencia": "Fachada del Ayuntamiento",
 }
@@ -45,6 +44,29 @@ async def test_admin_dashboard_accepts_admin(async_client, admin_token):
     assert response.status_code == 200
     data = response.json()
     assert data["role"] == "admin"
+    assert "content" in data and "title" in data["content"]
+
+@pytest.mark.asyncio
+async def test_items_endpoint_returns_default_items(async_client):
+    """El endpoint de items debe existir y devolver el listado básico."""
+    response = await async_client.get("/api/v1/items")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, dict)
+    assert "items" in data
+    assert isinstance(data["items"], list)
+    assert len(data["items"]) >= 1
+    assert "id" in data["items"][0] and "name" in data["items"][0]
+    assert data.get("requested_by") == "frontend"
+
+@pytest.mark.asyncio
+async def test_citizen_dashboard_endpoint_is_available(async_client):
+    """El endpoint ciudadano de dashboard debe responder con contenido de bienvenida."""
+    response = await async_client.get("/api/v1/citizen/dashboard")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["message"].startswith("Bienvenido")
+    assert "content" in data and "title" in data["content"]
 
 # ---------------------------------------------------------------------------
 # Tests del flujo de tickets (Ciudadano Público / Admin Autenticado)

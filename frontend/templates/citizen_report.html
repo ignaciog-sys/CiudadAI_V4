@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card">
+  <h1>Reportar incidencia</h1>
+  <p class="muted">Completa este formulario para informar un problema en la ciudad. No necesitas iniciar sesión.</p>
+
+  {% if error %}
+  <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" action="/citizen/report" class="stack">
+    <label>
+      Nombre
+      <input type="text" name="nombre" required />
+    </label>
+    <label>
+      Apellidos
+      <input type="text" name="apellidos" required />
+    </label>
+    <label>
+      NIF
+      <input type="text" name="nif" required />
+    </label>
+    <label>
+      Teléfono
+      <input type="text" name="telefono" required />
+    </label>
+    <label>
+      Email
+      <input type="email" name="email" required />
+    </label>
+    <label>
+      Categoría
+      <select name="categoria" required>
+        <option value="movilidad">Movilidad</option>
+        <option value="limpieza">Limpieza</option>
+        <option value="alumbrado_publico">Alumbrado público</option>
+        <option value="parques_y_jardines">Parques y jardines</option>
+        <option value="mobiliario_urbano">Mobiliario urbano</option>
+        <option value="otros">Otros</option>
+      </select>
+    </label>
+    <label>
+      Descripción
+      <textarea name="description" rows="4" required></textarea>
+    </label>
+    <label>
+      Dirección personal
+      <input type="text" name="direccion_persona" required />
+    </label>
+    <label>
+      Ubicación de la incidencia
+      <input type="text" name="ubicacion_incidencia" required />
+    </label>
+
+    <button type="submit">Enviar reporte</button>
+  </form>
+</section>
+{% endblock %}

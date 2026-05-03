@@ -37,6 +37,10 @@ async def admin_dashboard(user: CurrentUser = Depends(require_admin)) -> dict:
         "message": "⚠️ ERES ADMIN - CONTENIDO CONFIDENCIAL",
         "username": user.username,
         "role": user.role,
+        "content": {
+            "title": "Panel de administración",
+            "description": "Revisa incidencias, estadísticas y el estado de la ciudad desde aquí.",
+        },
     }
 
 

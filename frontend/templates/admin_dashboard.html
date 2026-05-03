@@ -1,49 +1,217 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="admin-container">
-  <div class="admin-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 8px; margin-bottom: 2rem;">
-    <h1 style="margin: 0; font-size: 2.5rem;">⚠️ PANEL ADMINISTRATIVO</h1>
-    <p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 0.9;">{{ admin_data.message }}</p>
-  </div>
-
-  <div class="admin-info" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #667eea;">
-    <h2 style="margin-top: 0;">Información del Usuario</h2>
-    <p><strong>Usuario:</strong> {{ current_user.username }}</p>
-    <p><strong>Rol:</strong> <span style="background: #667eea; color: white; padding: 0.25rem 0.75rem; border-radius: 4px; font-weight: bold;">{{ current_user.role | upper }}</span></p>
-  </div>
-
-  <div class="admin-content" style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid #ddd;">
-    <h2>{{ admin_data.content.title }}</h2>
-    <p>{{ admin_data.content.description }}</p>
-    
-    <div style="margin-top: 2rem; padding: 1rem; background: #fff3cd; border-radius: 4px; border-left: 4px solid #ff9800;">
-      <p style="margin: 0;">
-        <strong>⚠️ CONTENIDO CONFIDENCIAL:</strong> Este panel es de acceso restringido solo para administradores. 
-        Cualquier acción realizada aquí será registrada.
-      </p>
+<div class="admin-page-wrapper">
+  <div class="admin-container">
+    <div class="admin-header">
+      <div>
+        <h1>Panel Administrativo</h1>
+      </div>
+      <div class="admin-header-actions">
+        <form method="post" action="/logout">
+          <button type="submit" class="button secondary">Cerrar sesión</button>
+        </form>
+      </div>
     </div>
+
+    <div class="admin-info card">
+      <h2>Información del usuario</h2>
+      <p><strong>Usuario:</strong> {{ current_user.username }}</p>
+      <p><strong>Rol:</strong> <span class="badge">{{ current_user.role | upper }}</span></p>
+    </div>
+
+  <div class="admin-grid">
+    <section class="card admin-panel">
+      <h2>{{ admin_data.content.title }}</h2>
+      <p>{{ admin_data.content.description }}</p>
+    </section>
+
+    <section class="card stats-panel">
+      <h2>Estadísticas</h2>
+      <div class="summary-grid stats-simple">
+        <div class="summary-card">
+          <span>Nuevo</span>
+          <strong>{{ admin_stats.total }}</strong>
+        </div>
+        <div class="summary-card">
+          <span>Pendiente</span>
+          <strong>{{ admin_stats.pending_review }}</strong>
+        </div>
+        <div class="summary-card accent">
+          <span>Cerrado</span>
+          <strong>{{ admin_stats.resolved }}</strong>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <div style="text-align: center; margin-top: 2rem;">
-    <form method="post" action="/logout" style="display: inline;">
-      <button type="submit" class="logout-btn" style="background: #dc3545; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
-        Cerrar Sesión
-      </button>
-    </form>
-  </div>
+  <section class="card tickets-panel wide-card">
+    <h2>Tickets recientes</h2>
+    {% if admin_tickets and admin_tickets | length > 0 %}
+    <table class="ticket-table wide-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Categoría</th>
+          <th>Estado</th>
+          <th>Urgencia</th>
+          <th>Ubicación</th>
+          <th>Descripción</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ticket in admin_tickets %}
+        <tr>
+          <td>{{ ticket.id }}</td>
+          <td>{{ ticket.category }}</td>
+          <td>{{ ticket.status }}</td>
+          <td>{{ ticket.prediccion_urgencia or 'N/A' }}</td>
+          <td>{{ ticket.ubicacion_incidencia }}</td>
+          <td class="description-cell">{{ ticket.description[:120] }}{% if ticket.description|length > 120 %}...{% endif %}</td>
+          <td>{{ ticket.fecha }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No hay tickets recientes para mostrar.</p>
+    {% endif %}
+  </section>
 </div>
 
 <style>
-  .admin-container {
-    max-width: 900px;
+  .admin-page-wrapper {
+    max-width: 1500px;
     margin: 0 auto;
-    padding: 2rem 0;
+    padding: 32px 24px 40px;
   }
-  
-  .logout-btn:hover {
-    background: #c82333;
-    transition: background 0.3s ease;
+
+  .admin-container {
+    display: grid;
+    gap: 24px;
+  }
+
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem 2.25rem;
+    background: linear-gradient(135deg, #001f5b 0%, #0a3f95 45%, #1348c1 100%);
+    color: white;
+    border-radius: 24px;
+    min-height: 140px;
+  }
+
+  .admin-header h1 {
+    margin: 0;
+    font-size: 2.3rem;
+    letter-spacing: -0.03em;
+  }
+
+  .admin-header-actions {
+    display: flex;
+    align-items: center;
+  }
+
+  .admin-info {
+    padding: 1.75rem;
+    border-radius: 24px;
+    border: 1px solid rgba(0, 31, 91, 0.12);
+    background: #ffffff;
+  }
+
+  .badge {
+    display: inline-block;
+    background: #0a3f95;
+    color: white;
+    padding: 0.45rem 0.95rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+  }
+
+  .admin-grid {
+    display: grid;
+    grid-template-columns: minmax(360px, 1.2fr) minmax(320px, 0.8fr);
+    gap: 24px;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-top: 1.25rem;
+  }
+
+  .summary-card {
+    padding: 1.2rem;
+    border-radius: 22px;
+    background: rgba(10, 64, 149, 0.08);
+    border: 1px solid rgba(10, 64, 149, 0.16);
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .summary-card span {
+    color: #2f4f80;
+  }
+
+  .summary-card strong {
+    font-size: 1.55rem;
+    color: #001f5b;
+  }
+
+  .summary-card.accent {
+    background: rgba(0, 31, 91, 0.08);
+    border-color: rgba(0, 31, 91, 0.18);
+  }
+
+  .ticket-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+
+  .ticket-table th,
+  .ticket-table td {
+    text-align: left;
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid #e6ecf8;
+    vertical-align: top;
+  }
+
+  .ticket-table th {
+    color: #4b5b82;
+    font-size: 0.92rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .ticket-table tbody tr:hover {
+    background: rgba(0, 31, 91, 0.04);
+  }
+
+  .ticket-table td.description-cell {
+    max-width: 320px;
+    white-space: normal;
+  }
+
+  .wide-card {
+    grid-column: 1 / -1;
+  }
+
+  .wide-table {
+    min-width: 100%;
+  }
+
+  .button.secondary {
+    background: #0a3f95;
+  }
+
+  .button.secondary:hover {
+    background: #082f74;
   }
 </style>
 {% endblock %}

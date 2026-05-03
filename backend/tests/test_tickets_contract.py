@@ -9,7 +9,6 @@ from datetime import datetime
 from src.models.tickets import (
     TicketAnonymizedRecord,
     TicketCategory,
-    TicketChannel,
     TicketCreateInput,
     TicketStatus,
     TicketUrgency,
@@ -27,7 +26,6 @@ def test_ticket_create_input_builds_with_defaults():
         email="ana@example.com",
         categoria=TicketCategory.movilidad,
         description="Hay un bache grande en la calle principal.",
-        canal=TicketChannel.web,
         direccion_persona="Calle Mayor 1",
         ubicacion_incidencia="Esquina con Plaza Central",
     )
@@ -48,7 +46,6 @@ def test_ticket_create_input_accepts_spanish_category_labels():
         email="ana@example.com",
         categoria="alumbrado público",
         description="Farola apagada desde hace días.",
-        canal=TicketChannel.mobile,
         direccion_persona="Calle Mayor 1",
         ubicacion_incidencia="Esquina con Plaza Central",
     )
@@ -68,9 +65,7 @@ def test_ticket_anonymized_record_contains_control_fields():
         email="***",
         categoria=TicketCategory.alumbrado_publico,
         description="Farola apagada desde hace días.",
-        urgencia=TicketUrgency.high,
         fecha=datetime.now().astimezone(),
-        canal=TicketChannel.mobile,
         direccion_persona="Avenida del Parque 2",
         ubicacion_incidencia="Frente al portal 10",
         prediccion_urgencia=TicketUrgency.medium,

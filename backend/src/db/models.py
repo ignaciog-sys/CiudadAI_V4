@@ -35,7 +35,6 @@ class TicketORM(Base):
     # --- Datos de la incidencia ---
     categoria: Mapped[str] = mapped_column(String(60))
     description: Mapped[str] = mapped_column(Text)
-    canal: Mapped[str] = mapped_column(String(30))
     direccion_persona: Mapped[str] = mapped_column(String(255))
     ubicacion_incidencia: Mapped[str] = mapped_column(String(255))
 

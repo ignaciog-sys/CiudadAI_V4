@@ -40,6 +40,27 @@ async def citizen_create_ticket(
 
 
 @citizen_router.get(
+    "/dashboard",
+    status_code=status.HTTP_200_OK,
+    responses=COMMON_ERROR_RESPONSES,
+    summary="Dashboard del ciudadano",
+)
+async def citizen_dashboard() -> dict:
+    """Devuelve información de bienvenida para el panel del ciudadano."""
+
+    return {
+        "message": "Bienvenido al panel ciudadano.",
+        "content": {
+            "title": "Reporta y sigue tus incidencias",
+            "description": (
+                "Aquí puedes gestionar tus solicitudes y ver el estado de tu ciudad "
+                "de manera sencilla."
+            ),
+        },
+    }
+
+
+@citizen_router.get(
     "/tickets/{ticket_id}/status",
     status_code=status.HTTP_200_OK,
     responses=COMMON_ERROR_RESPONSES,
@@ -69,7 +90,9 @@ async def get_ticket_status(
         "id": record.id,
         "estado": estado_ciudadano,
         "categoria": record.categoria,
-        "fecha_creacion": record.fecha
+        "fecha_creacion": record.fecha,
+        "description": record.description,
+        "ubicacion_incidencia": record.ubicacion_incidencia,
     }
 
 

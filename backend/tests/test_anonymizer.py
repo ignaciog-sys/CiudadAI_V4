@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from src.models.tickets import TicketCategory, TicketChannel, TicketCreateInput
+from src.models.tickets import TicketCategory, TicketCreateInput
 from src.services.anonymizer import anonymize_ticket
 
 
@@ -22,7 +22,7 @@ def sample_input() -> TicketCreateInput:
         email="ana@example.com",
         categoria=TicketCategory.movilidad,
         description="Hay un bache enorme en la Calle Mayor.",
-        canal=TicketChannel.web,
+
         direccion_persona="Calle Mayor 1",
         ubicacion_incidencia="Esquina con la Plaza Central",
     )
@@ -36,7 +36,7 @@ def test_anonymize_returns_dict(sample_input):
     assert isinstance(result, dict)
     expected_keys = {
         "nombre", "apellidos", "nif", "telefono", "email",
-        "categoria", "description", "canal",
+        "categoria", "description",
         "direccion_persona", "ubicacion_incidencia", "fecha",
     }
     assert expected_keys == set(result.keys())
@@ -49,7 +49,6 @@ def test_anonymize_preserves_non_sensitive_fields(sample_input):
 
     assert result["categoria"] == TicketCategory.movilidad
     assert result["description"] == sample_input.description
-    assert result["canal"] == TicketChannel.web
     assert result["direccion_persona"] == sample_input.direccion_persona
     assert result["ubicacion_incidencia"] == sample_input.ubicacion_incidencia
 
