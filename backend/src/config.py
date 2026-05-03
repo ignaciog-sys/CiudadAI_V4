@@ -80,7 +80,6 @@ if settings.secret_key is None:
     # In dev, generate a secure key to avoid using a fixed value in code; in prod require explicit config.
     if settings.app_env == "dev":
         import logging
-
         import secrets
 
         logging.getLogger(__name__).warning(
