@@ -8,17 +8,29 @@ Se ha implementado un sistema de dos roles de usuario con dashboards y rutas dif
 
 #### Admin (Administrador)
 - **Usuario:** `api_user`
-- **Contraseña:** `change_me`
+- **Contraseña:** (demo) configurable via environment variable `MOCK_AUTH_PASSWORD` in `backend/.env` (valor por defecto: `change_me`).
 - **Rol:** Admin
 - **Acceso:** `/admin/dashboard`
 - **Mensaje:** ⚠️ ERES ADMIN - CONTENIDO CONFIDENCIAL
 
 #### Ciudadano
 - **Usuario:** `citizen_user`
-- **Contraseña:** `citizen_pass`
+- **Contraseña:** (demo) configurable in the project configuration or mocked in authentication service. No se recomienda guardar contraseñas reales en el repositorio.
 - **Rol:** Citizen
 - **Acceso:** `/citizen/dashboard`
 - **Mensaje:** 🏙️ ERES CIUDADANO - CUIDA TU CIUDAD
+
+> Nota de seguridad: Este repositorio usa credenciales demo para facilitar pruebas. Evita subir contraseñas reales a Git. Para cambiar la contraseña de admin en tu entorno local:
+
+1. Edita `backend/.env` y cambia `MOCK_AUTH_PASSWORD` al valor deseado.
+2. Si arrancas con Docker, define la variable en `docker-compose.override.yml` o en el entorno del servicio.
+3. También puedes exportar la variable en tu shell antes de iniciar el backend:
+
+```bash
+export MOCK_AUTH_PASSWORD="mi_nueva_contraseña"
+```
+
+Si necesitas que te guíe para cambiarla ahora, dime y lo hago desde tu entorno.
 
 ---
 

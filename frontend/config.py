@@ -13,7 +13,7 @@ class FrontendSettings(BaseSettings):
         default="http://api:8000",
         alias="BACKEND_BASE_URL",
     )
-    secret_key: str = Field(default="change-this-key", alias="FRONTEND_SECRET_KEY")
+    secret_key: str | None = Field(default=None, alias="FRONTEND_SECRET_KEY")
 
 
 settings = FrontendSettings()

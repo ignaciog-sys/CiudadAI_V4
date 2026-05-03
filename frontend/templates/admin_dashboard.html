@@ -58,6 +58,7 @@
           <th>Ubicación</th>
           <th>Descripción</th>
           <th>Fecha</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -70,6 +71,7 @@
           <td>{{ ticket.ubicacion_incidencia }}</td>
           <td class="description-cell">{{ ticket.description[:120] }}{% if ticket.description|length > 120 %}...{% endif %}</td>
           <td>{{ ticket.fecha }}</td>
+          <td><a class="button-link" href="/admin/tickets/{{ ticket.id }}">Editar</a></td>
         </tr>
         {% endfor %}
       </tbody>
@@ -196,6 +198,23 @@
   .ticket-table td.description-cell {
     max-width: 320px;
     white-space: normal;
+  }
+
+  .button-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(0, 31, 91, 0.08);
+    color: #001f5b;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .button-link:hover {
+    background: rgba(0, 31, 91, 0.12);
   }
 
   .wide-card {

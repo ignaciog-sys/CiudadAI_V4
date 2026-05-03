@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-page-wrapper">
+  <div class="admin-container">
+    <div class="admin-header">
+      <div>
+        <h1>Editar ticket #{{ ticket.id }}</h1>
+      </div>
+      <div class="admin-header-actions">
+        <a class="button-link" href="/admin/dashboard">Volver</a>
+      </div>
+    </div>
+
+    {% if form_error %}
+      <div class="card error-card">{{ form_error }}</div>
+    {% endif %}
+
+    <section class="card">
+      <h2>Detalle</h2>
+      <div class="detail-grid">
+        <div><strong>Estado actual:</strong> {{ ticket.status }}</div>
+        <div><strong>Categoría:</strong> {{ ticket.categoria }}</div>
+        <div><strong>Urgencia (IA):</strong> {{ ticket.prediccion_urgencia or 'N/A' }}</div>
+        <div><strong>Ubicación:</strong> {{ ticket.ubicacion_incidencia }}</div>
+        <div><strong>Fecha:</strong> {{ ticket.fecha }}</div>
+      </div>
+      <div class="detail-block">
+        <strong>Descripción</strong>
+        <p class="muted">{{ ticket.description }}</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Acción del administrador</h2>
+      <form method="post" action="/admin/tickets/{{ ticket.id }}/review" class="stack">
+        <label>
+          Cambiar estado
+          <select name="status" required>
+            {% for s in statuses %}
+              <option value="{{ s }}" {% if ticket.status == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label>
+          Notas
+          <textarea name="notes" rows="4" maxlength="2000" placeholder="Notas del admin (opcional)">{{ ticket.admin_notes or '' }}</textarea>
+        </label>
+
+        <button type="submit">Guardar cambios</button>
+      </form>
+    </section>
+  </div>
+</div>
+
+<style>
+  .admin-page-wrapper {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 32px 24px 40px;
+  }
+
+  .admin-container {
+    display: grid;
+    gap: 24px;
+  }
+
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem 2.25rem;
+    background: linear-gradient(135deg, #001f5b 0%, #0a3f95 45%, #1348c1 100%);
+    color: white;
+    border-radius: 24px;
+    min-height: 120px;
+  }
+
+  .admin-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    letter-spacing: -0.03em;
+  }
+
+  .button-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .button-link:hover {
+    background: rgba(255, 255, 255, 0.26);
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(240px, 1fr));
+    gap: 10px 18px;
+    margin-top: 12px;
+  }
+
+  .detail-block {
+    margin-top: 14px;
+  }
+
+  .error-card {
+    border: 1px solid rgba(155, 28, 28, 0.35);
+    background: rgba(155, 28, 28, 0.08);
+    color: #7f1d1d;
+    font-weight: 700;
+  }
+</style>
+{% endblock %}

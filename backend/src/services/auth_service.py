@@ -15,17 +15,38 @@ from src.config import settings
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# Base de datos de empleados (Admins)
-# Se ha eliminado el 'citizen_user' ya que los ciudadanos no se autentican.
-# ---------------------------------------------------------------------------
-USERS_DB: dict[str, dict] = {
-    "empleado_admin": {
-        "username": "empleado_admin",
-        "hashed_password": "$2b$12$GPDu9U9rF0tqcEgjFq6sme8z/dLZ0zjl.puYM5yQXCbPhTVDmgUa6", # pass: change_me
+# Users database: build at startup from configuration to avoid hardcoding secrets in code.
+USERS_DB: dict[str, dict] = {}
+
+
+def _build_users_db_from_settings() -> None:
+    """Create USERS_DB from `settings.mock_auth_username` and `settings.mock_auth_password`.
+
+    If the provided password looks like a bcrypt hash (starts with $2b$), use it as-is.
+    Otherwise hash the plaintext at startup (keeps only in-memory hash; do not commit plaintext).
+    """
+    from src.config import settings
+    import logging
+
+    if not settings.mock_auth_username or not settings.mock_auth_password:
+        logging.getLogger(__name__).debug("No demo mock auth configured via settings.")
+        return
+
+    username = settings.mock_auth_username
+    pwd = settings.mock_auth_password
+    if pwd.startswith("$2b$"):
+        hashed = pwd
+    else:
+        logging.getLogger(__name__).warning(
+            "Mock auth password supplied in environment will be hashed at startup. Do not use real passwords in env in production."
+        )
+        hashed = bcrypt.hashpw(pwd.encode(), bcrypt.gensalt()).decode()
+
+    USERS_DB[username] = {
+        "username": username,
+        "hashed_password": hashed,
         "role": "admin",
     }
-}
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -85,3 +106,10 @@ def authenticate_demo_user(username: str, password: str) -> dict | None:
         "token_type": "bearer",
         "expires_in": settings.access_token_expire_minutes * 60,
     }
+
+
+# Build USERS_DB from settings at import time (keeps secrets out of source)
+try:
+    _build_users_db_from_settings()
+except Exception:
+    logger.exception("Error building USERS_DB from settings")

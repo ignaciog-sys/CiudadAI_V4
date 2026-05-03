@@ -37,24 +37,24 @@ class Settings(BaseSettings):
     )
 
     # --- Autenticación JWT real ---
-    secret_key: str = Field(
-        default="CAMBIA_ESTO_EN_PRODUCCION_usa_openssl_rand_hex_32",
+    secret_key: str | None = Field(
+        default=None,
         alias="SECRET_KEY",
     )
     jwt_algorithm: str = Field(default="HS256", alias="JWT_ALGORITHM")
 
     # --- Credenciales hardcoded (mock de usuarios) ---
     # Usuarios gestionados en auth_service.py con hashes bcrypt.
-    mock_auth_username: str = Field(default="api_user", alias="MOCK_AUTH_USERNAME")
-    mock_auth_password: str = Field(default="change_me", alias="MOCK_AUTH_PASSWORD")
-    mock_auth_token: str = Field(default="bootstrap-token", alias="MOCK_AUTH_TOKEN")
+    mock_auth_username: str | None = Field(default=None, alias="MOCK_AUTH_USERNAME")
+    mock_auth_password: str | None = Field(default=None, alias="MOCK_AUTH_PASSWORD")
+    mock_auth_token: str | None = Field(default=None, alias="MOCK_AUTH_TOKEN")
 
     # --- Base de datos PostgreSQL ---
     db_host: str = Field(default="localhost", alias="DB_HOST")
     db_port: int = Field(default=5432, alias="DB_PORT")
     db_name: str = Field(default="ciudadia", alias="DB_NAME")
     db_user: str = Field(default="ciudadia_user", alias="DB_USER")
-    db_password: str = Field(default="ciudadia_pass", alias="DB_PASSWORD")
+    db_password: str | None = Field(default=None, alias="DB_PASSWORD")
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -73,4 +73,33 @@ class Settings(BaseSettings):
     ml_service_timeout: float = Field(default=10.0, alias="ML_SERVICE_TIMEOUT")
 
 
-settings = Settings()
+settings = Settings()
+
+# Runtime checks: warn or generate safe defaults for development, but avoid hardcoding secrets.
+if settings.secret_key is None:
+    # In dev, generate a secure key to avoid using a fixed value in code; in prod require explicit config.
+    if settings.app_env == "dev":
+        import secrets, logging
+
+        logging.getLogger(__name__).warning(
+            "SECRET_KEY not set in environment; generating ephemeral secret for dev. Set SECRET_KEY in production."
+        )
+        settings.secret_key = secrets.token_hex(32)
+    else:
+        raise ValueError("SECRET_KEY must be set in environment for non-dev environments")
+
+if settings.mock_auth_username and settings.mock_auth_password:
+    # sensible to log that demo credentials are active (no password value printed)
+    import logging
+
+    logging.getLogger(__name__).warning(
+        "Demo mock auth enabled for user '%s' (password taken from env). Remove in production.",
+        settings.mock_auth_username,
+    )
+
+if settings.db_password is None:
+    import logging
+
+    logging.getLogger(__name__).warning(
+        "DB_PASSWORD not set; database connections may fail. Provide DB_PASSWORD via environment or Docker secrets."
+    )

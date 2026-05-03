@@ -118,7 +118,8 @@ async def admin_dashboard(request: Request):
             admin_stats = stats_response.json()
 
             tickets_response = await client.get(
-                "/api/v1/admin/tickets",
+                # Listar todos los tickets creados (sin filtrar por estado)
+                "/api/v1/tickets",
                 headers={"Authorization": f"Bearer {token}"},
                 params={"limit": 10},
             )
@@ -139,6 +140,109 @@ async def admin_dashboard(request: Request):
         "admin_tickets": admin_tickets,
     }
     return templates.TemplateResponse("admin_dashboard.html", context)
+
+
+@router.get("/admin/tickets/{ticket_id}")
+async def admin_ticket_detail(request: Request, ticket_id: int):
+    token = request.session.get("access_token")
+    role = request.session.get("role")
+    if not token or role != "admin":
+        return RedirectResponse(url="/login", status_code=303)
+
+    try:
+        import httpx
+        async with httpx.AsyncClient(base_url=api_client.base_url, timeout=10.0) as client:
+            ticket_response = await client.get(
+                f"/api/v1/admin/tickets/{ticket_id}",
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            ticket_response.raise_for_status()
+            ticket = ticket_response.json()
+            if ticket and ticket.get("fecha"):
+                ticket["fecha"] = _format_datetime(ticket["fecha"])
+
+            spec_response = await client.get("/api/v1/tickets/spec")
+            spec_response.raise_for_status()
+            spec = spec_response.json()
+            statuses = spec.get("statuses") or []
+    except (HTTPStatusError, RequestError):
+        request.session.clear()
+        return RedirectResponse(url="/login", status_code=303)
+
+    return templates.TemplateResponse(
+        "admin_ticket_edit.html",
+        {
+            "request": request,
+            "ticket": ticket,
+            "statuses": statuses,
+            "form_error": None,
+        },
+    )
+
+
+@router.post("/admin/tickets/{ticket_id}/review")
+async def admin_ticket_review_submit(
+    request: Request,
+    ticket_id: int,
+    status: str = Form(...),
+    notes: str = Form(""),
+):
+    token = request.session.get("access_token")
+    role = request.session.get("role")
+    if not token or role != "admin":
+        return RedirectResponse(url="/login", status_code=303)
+
+    try:
+        import httpx
+        async with httpx.AsyncClient(base_url=api_client.base_url, timeout=10.0) as client:
+            response = await client.patch(
+                f"/api/v1/admin/tickets/{ticket_id}/review",
+                headers={"Authorization": f"Bearer {token}"},
+                json={"status": status, "notes": (notes or None)},
+            )
+            response.raise_for_status()
+    except HTTPStatusError as exc:
+        error_detail = "No se pudo actualizar el ticket."
+        try:
+            body = exc.response.json()
+            if isinstance(body, dict):
+                detail = body.get("detail") or body.get("message")
+                if detail:
+                    error_detail = str(detail)
+        except ValueError:
+            pass
+        # Re-render la pantalla con el error
+        try:
+            import httpx
+            async with httpx.AsyncClient(base_url=api_client.base_url, timeout=10.0) as client:
+                ticket_response = await client.get(
+                    f"/api/v1/admin/tickets/{ticket_id}",
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+                ticket_response.raise_for_status()
+                ticket = ticket_response.json()
+                if ticket and ticket.get("fecha"):
+                    ticket["fecha"] = _format_datetime(ticket["fecha"])
+                spec_response = await client.get("/api/v1/tickets/spec")
+                spec_response.raise_for_status()
+                statuses = (spec_response.json().get("statuses") or [])
+        except Exception:
+            return RedirectResponse(url="/admin/dashboard", status_code=303)
+
+        return templates.TemplateResponse(
+            "admin_ticket_edit.html",
+            {
+                "request": request,
+                "ticket": ticket,
+                "statuses": statuses,
+                "form_error": error_detail,
+            },
+            status_code=400,
+        )
+    except RequestError:
+        return RedirectResponse(url="/admin/dashboard", status_code=303)
+
+    return RedirectResponse(url="/admin/dashboard", status_code=303)
 
 
 @router.get("/citizen/report")

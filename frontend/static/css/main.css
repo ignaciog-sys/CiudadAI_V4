@@ -153,8 +153,55 @@ a.button,
 }
 
 .phone-prefix {
-  max-width: 180px;
+  max-width: 140px;
 }
+
+/* Custom select styles for phone prefix */
+.phone-select-wrapper {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+.custom-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 140px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+.custom-options {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  max-height: calc(40px * 6); /* show 6 items at most */
+  overflow-y: auto;
+  display: none;
+}
+.custom-option {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.custom-option:hover, .custom-option.active {
+  background: var(--primary);
+  color: white;
+}
+.custom-select-open .custom-options { display: block; }
 
 .field-note {
   display: block;
