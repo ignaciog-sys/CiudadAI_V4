@@ -13,9 +13,14 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from src.app import app
+from src.config import settings
 from src.db.models import Base
 from src.db.session import get_db
-from src.services.auth_service import _build_users_db_from_settings, create_access_token
+from src.services.auth_service import (
+    USERS_DB,
+    _build_users_db_from_settings,
+    create_access_token,
+)
 
 # ---------------------------------------------------------------------------
 # Mock auth setup
@@ -27,6 +32,9 @@ def setup_mock_auth():
     """Set up mock auth environment and populate USERS_DB for tests."""
     os.environ["MOCK_AUTH_USERNAME"] = "api_user"
     os.environ["MOCK_AUTH_PASSWORD"] = "change_me"
+    settings.mock_auth_username = "api_user"
+    settings.mock_auth_password = "change_me"
+    USERS_DB.clear()
     _build_users_db_from_settings()
     yield
 
