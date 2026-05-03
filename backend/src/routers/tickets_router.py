@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.responses import COMMON_ERROR_RESPONSES
 from src.constants import API_TAGS
 from src.db.session import get_db
-from src.deps import get_current_user, require_admin
+from src.deps import require_admin
 from src.models.auth import CurrentUser
 from src.models.tickets import (
     TicketAdminDecision,

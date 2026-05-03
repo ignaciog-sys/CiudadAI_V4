@@ -11,7 +11,7 @@ objetos de dominio definidos en src/models/tickets.py.
 """
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,12 +22,12 @@ from src.models.tickets import (
     TicketAdminDecision,
     TicketAnonymizedRecord,
     TicketCategory,
+    TicketCreateInput,
     TicketDashboardStats,
     TicketStatus,
     TicketSummary,
     TicketUrgency,
 )
-from src.models.tickets import TicketCreateInput
 from src.services.anonymizer import anonymize_ticket
 
 logger = logging.getLogger(__name__)
@@ -196,8 +196,8 @@ async def admin_review_ticket(
         .values(
             status=str(decision.status),
             reviewed_by=reviewer_username,
-            reviewed_at=datetime.now(timezone.utc),
-            admin_notes=decision.notes, 
+            reviewed_at=datetime.now(UTC),
+            admin_notes=decision.notes,
         )
     )
     

@@ -6,7 +6,6 @@ Se ha eliminado la autenticación para ciudadanos según los nuevos requisitos.
 """
 
 import pytest
-from src.models.tickets import TicketCategory
 
 # ---------------------------------------------------------------------------
 # Helpers

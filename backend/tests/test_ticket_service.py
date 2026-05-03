@@ -5,7 +5,6 @@ de tickets usando una BD SQLite en memoria.
 """
 
 import pytest
-import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.tickets import (

@@ -4,7 +4,7 @@ Propósito: mapear la tabla `tickets` a una clase Python para que
 SQLAlchemy pueda ejecutar queries tipadas sin SQL crudo.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import DateTime, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -42,7 +42,7 @@ class TicketORM(Base):
     fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
     )
 
     # --- Control de IA ---

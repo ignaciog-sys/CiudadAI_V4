@@ -79,7 +79,9 @@ settings = Settings()
 if settings.secret_key is None:
     # In dev, generate a secure key to avoid using a fixed value in code; in prod require explicit config.
     if settings.app_env == "dev":
-        import secrets, logging
+        import logging
+
+        import secrets
 
         logging.getLogger(__name__).warning(
             "SECRET_KEY not set in environment; generating ephemeral secret for dev. Set SECRET_KEY in production."

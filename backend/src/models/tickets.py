@@ -6,7 +6,7 @@ versión anonimizada que se persiste y los metadatos de revisión.
 
 import re
 import unicodedata
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import IntEnum, StrEnum
 
 from pydantic import BaseModel, EmailStr, Field, validator
@@ -82,7 +82,7 @@ class TicketCreateInput(BaseModel):
     description: str = Field(min_length=1, max_length=300)
     direccion_persona: str = Field(min_length=1, max_length=255)
     ubicacion_incidencia: str = Field(min_length=1, max_length=255)
-    fecha: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    fecha: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @validator("nombre", "apellidos")
     def validate_name(cls, value: str) -> str:
@@ -134,7 +134,7 @@ class TicketClassificationResult(BaseModel):
     category: TicketCategory = Field(description="Categoría predicha por el modelo")
     model_name: str = Field(min_length=1, max_length=120)
     model_version: str = Field(min_length=1, max_length=60)
-    scored_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    scored_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class TicketAdminDecision(BaseModel):

@@ -6,9 +6,9 @@ Ejemplo de uso: orquestadores, pruebas o monitors consultan `/health`.
 
 from fastapi import APIRouter, status
 
+from src.config import settings
 from src.constants import API_TAGS
 from src.models.health import HealthResponse
-from src.config import settings
 
 health_router = APIRouter(prefix="/health", tags=[API_TAGS["health"]])
 

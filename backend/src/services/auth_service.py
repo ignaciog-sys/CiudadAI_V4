@@ -6,7 +6,7 @@ este servicio ya que interactúan de forma anónima.
 """
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import bcrypt
 from jose import JWTError, jwt
@@ -25,8 +25,9 @@ def _build_users_db_from_settings() -> None:
     If the provided password looks like a bcrypt hash (starts with $2b$), use it as-is.
     Otherwise hash the plaintext at startup (keeps only in-memory hash; do not commit plaintext).
     """
-    from src.config import settings
     import logging
+
+    from src.config import settings
 
     if not settings.mock_auth_username or not settings.mock_auth_password:
         logging.getLogger(__name__).debug("No demo mock auth configured via settings.")
@@ -69,7 +70,7 @@ def authenticate_user(username: str, password: str) -> dict | None:
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """Genera un JWT para la sesión del empleado."""
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (
+    expire = datetime.now(UTC) + (
         expires_delta or timedelta(minutes=settings.access_token_expire_minutes)
     )
     to_encode["exp"] = expire

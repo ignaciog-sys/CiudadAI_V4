@@ -4,7 +4,7 @@ Propósito: verificar que el stub devuelve los campos correctos y que cuando
 el compañero lo implemente, los campos sensibles quedan modificados.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 
 import pytest
 
