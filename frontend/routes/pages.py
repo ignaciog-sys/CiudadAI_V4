@@ -280,6 +280,12 @@ async def citizen_report_submit(
         "ubicacion_incidencia": ubicacion_incidencia,
     }
     try:
+        # Llamar al endpoint de preview de anonimización antes de crear el ticket
+        try:
+            preview = await api_client.anonymize_ticket(payload)
+        except Exception:
+            preview = None
+
         ticket = await api_client.create_ticket(payload)
     except HTTPStatusError as exc:
         error_detail = "No se pudo enviar el reporte. Inténtalo de nuevo más tarde."
@@ -315,9 +321,10 @@ async def citizen_report_submit(
             status_code=503,
         )
 
+    # Mostrar en la página de éxito tanto el ticket persistido como la preview
     return templates.TemplateResponse(
         "ticket_success.html",
-        {"request": request, "ticket": ticket},
+        {"request": request, "ticket": ticket, "preview": preview},
     )
 
 
