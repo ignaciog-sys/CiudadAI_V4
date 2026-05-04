@@ -41,7 +41,7 @@ def limpiar_descripcion(descripcion: str, ticket: TicketCreateInput) -> str:
         texto_limpio = re.sub(r'\b' + re.escape(ticket.apellidos) + r'\b', anonimizar_valor(ticket.apellidos, "apellidos"), texto_limpio, flags=re.IGNORECASE)
     
     # Reemplazo general para otros posibles correos o DNIs
-    texto_limpio = re.sub(r'\b\d{8}\s*[A-Za-z]?\b', '[NIF_OCULTO]', texto_limpio)
+    texto_limpio = re.sub(r'\b\d{8}\s*[A-Za-z]?\b', '[NRO_OCULTO]', texto_limpio)
     texto_limpio = re.sub(r'[\w\.-]+@[\w\.-]+\.\w+', lambda m: anonimizar_valor(m.group(0), "email"), texto_limpio)
     return texto_limpio
 
