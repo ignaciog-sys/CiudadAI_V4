@@ -104,7 +104,9 @@ async def create_ticket(
     """
 
     # Paso 1: anonimización (stub hasta que el compañero lo implemente)
+    logger.info("Llamando a anonymize_ticket para anonimizar datos del ciudadano")
     anon_data = anonymize_ticket(ticket_input)
+    logger.info("Anonimización completada. Nombre anonimizado: %s", anon_data.get("nombre"))
 
     # Paso 2: inferencia ML (con fallback a None)
     ml_result = await call_ml_predict(

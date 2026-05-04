@@ -44,5 +44,14 @@ class BackendApiClient:
             response.raise_for_status()
             return response.json()
 
+    async def anonymize_ticket(self, payload: dict) -> dict:
+        async with httpx.AsyncClient(base_url=self.base_url, timeout=10.0) as client:
+            response = await client.post(
+                "/api/v1/citizen/tickets/anonymize",
+                json=payload,
+            )
+            response.raise_for_status()
+            return response.json()
+
 
 api_client = BackendApiClient(settings.backend_base_url)

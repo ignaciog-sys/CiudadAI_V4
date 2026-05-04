@@ -17,6 +17,7 @@ from src.models.tickets import (
     TicketSummary,
 )
 from src.services import ticket_service
+from src.services.anonymizer import anonymize_ticket
 
 citizen_router = APIRouter(prefix="/citizen", tags=[API_TAGS["citizen"]])
 
@@ -37,6 +38,23 @@ async def citizen_create_ticket(
     """
 
     return await ticket_service.create_ticket(db, body)
+
+
+
+@citizen_router.post(
+    "/tickets/anonymize",
+    status_code=status.HTTP_200_OK,
+    responses=COMMON_ERROR_RESPONSES,
+    summary="Anonimizar datos de un ticket (preview)",
+)
+async def citizen_anonymize_ticket(body: TicketCreateInput) -> dict:
+    """Devuelve una versión anonimizada del payload sin persistir.
+
+    Útil para que el frontend muestre un preview de cómo quedarán los datos
+    tras la anonimización en el servidor.
+    """
+
+    return anonymize_ticket(body)
 
 
 @citizen_router.get(

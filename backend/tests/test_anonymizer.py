@@ -6,13 +6,10 @@ el compañero lo implemente, los campos sensibles quedan modificados.
 
 from datetime import datetime
 
-import pytest
-
 from src.models.tickets import TicketCategory, TicketCreateInput
 from src.services.anonymizer import anonymize_ticket
 
 
-@pytest.fixture
 def sample_input() -> TicketCreateInput:
     return TicketCreateInput(
         nombre="Ana",
@@ -27,10 +24,10 @@ def sample_input() -> TicketCreateInput:
     )
 
 
-def test_anonymize_returns_dict(sample_input):
+def test_anonymize_returns_dict():
     """El stub debe devolver un diccionario con las claves del contrato."""
 
-    result = anonymize_ticket(sample_input)
+    result = anonymize_ticket(sample_input())
 
     assert isinstance(result, dict)
     expected_keys = {
@@ -48,21 +45,22 @@ def test_anonymize_returns_dict(sample_input):
     assert expected_keys == set(result.keys())
 
 
-def test_anonymize_preserves_non_sensitive_fields(sample_input):
+def test_anonymize_preserves_non_sensitive_fields():
     """Campos no sensibles deben llegar sin modificar al resultado."""
 
-    result = anonymize_ticket(sample_input)
+    sample = sample_input()
+    result = anonymize_ticket(sample)
 
     assert result["categoria"] == TicketCategory.movilidad
-    assert result["description"] == sample_input.description
-    assert result["direccion_persona"] == sample_input.direccion_persona
-    assert result["ubicacion_incidencia"] == sample_input.ubicacion_incidencia
+    assert result["description"] == sample.description
+    assert result["direccion_persona"] == sample.direccion_persona
+    assert result["ubicacion_incidencia"] == sample.ubicacion_incidencia
 
 
-def test_anonymize_fecha_is_datetime(sample_input):
+def test_anonymize_fecha_is_datetime():
     """El campo fecha debe ser un datetime con tzinfo."""
 
-    result = anonymize_ticket(sample_input)
+    result = anonymize_ticket(sample_input())
 
     assert isinstance(result["fecha"], datetime)
     assert result["fecha"].tzinfo is not None
@@ -74,15 +72,19 @@ def test_anonymize_fecha_is_datetime(sample_input):
 # ---------------------------------------------------------------------------
 
 
-def test_stub_warning_fields_are_not_yet_anonymized(sample_input):
+def test_stub_warning_fields_are_not_yet_anonymized():
     """STUB: este test documenta que los campos sensibles aún no están anonimizados.
 
     Cuando el compañero implemente la lógica real, este test debe fallar y
     reemplazarse por aserciones que verifiquen el enmascarado correcto.
     """
 
-    result = anonymize_ticket(sample_input)
+    sample = sample_input()
+    result = anonymize_ticket(sample)
 
-    # Mientras sea el stub, los datos originales pasan sin modificar.
-    assert result["nombre"] == sample_input.nombre  # TODO: cambiar a "A***" o similar
-    assert result["nif"] == sample_input.nif  # TODO: cambiar a "***"
+    # Verificamos que los campos sensibles se enmascaran según la implementación
+    assert result["nombre"] == "A***"
+    assert result["apellidos"] == "G***"
+    assert result["nif"] == "[NIF_OCULTO]"
+    assert result["telefono"].endswith("***")
+    assert "@***" in result["email"]
